@@ -9,3 +9,14 @@ Content-Type: application/json
 {
   "task_id": "58aw1h"
 }
+
+### POST /webhooks/updateEstimate
+POST http://localhost:8000/webhooks/updateEstimate
+Content-Type: application/json
+
+{
+  "task_id": "5ecjat",
+  "history_items": [
+    {"after": 21600000}
+  ]
+}

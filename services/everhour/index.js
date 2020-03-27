@@ -18,10 +18,30 @@ const deleteTask = async clickupTaskId => {
     });
 };
 
+const updateEstimate = async (clickupTaskId, clickupEstimate) => {
+  const schedules = await tasks
+    .getSchedule(apiKey, `cl:${clickupTaskId}`)
+    .then(res => res.data);
+
+  const promises = schedules.map(schedule =>
+    tasks.updateSchedule(apiKey, schedule.id, {
+      time: (clickupEstimate || 900000) / 1000
+    })
+  );
+
+  return Promise.all(promises)
+    .then(() => `Updated estimates for ${clickupTaskId}`)
+    .catch(() => {
+      throw `Estimates update error --- ${clickupTaskId}`;
+    });
+};
+
 const fnMap = key => {
   switch (key) {
     case "DELETE":
       return deleteTask;
+    case "ESTIMATE":
+      return updateEstimate;
     default:
       console.log("Invalid Key");
   }
