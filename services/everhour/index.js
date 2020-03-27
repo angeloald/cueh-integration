@@ -1,9 +1,13 @@
 const { tasks } = require("everhour-core");
-const { stringifyDate } = require("../../utils/index");
+const { stringifyDate, convUser } = require("../../utils/index");
+
+const clickup = require("clickup-core");
 
 const apiKey = process.env.EVERHOUR_API_KEY;
+const clickupApiKey = process.env.CLICKUP_API_KEY;
 
-const deleteTask = async clickupTaskId => {
+const deleteTask = async fnData => {
+  const { clickupTaskId } = fnData;
   const schedules = await tasks
     .getSchedule(apiKey, `cl:${clickupTaskId}`)
     .then(res => res.data);
@@ -19,7 +23,8 @@ const deleteTask = async clickupTaskId => {
     });
 };
 
-const updateEstimate = async (clickupTaskId, clickupEstimate) => {
+const updateEstimate = async fnData => {
+  const { clickupTaskId, clickupEstimate } = fnData;
   const schedules = await tasks
     .getSchedule(apiKey, `cl:${clickupTaskId}`)
     .then(res => res.data);
@@ -37,7 +42,8 @@ const updateEstimate = async (clickupTaskId, clickupEstimate) => {
     });
 };
 
-const updateDueDate = async (clickupTaskId, clickupDueDate) => {
+const updateDueDate = async fnData => {
+  const { clickupTaskId, clickupDueDate } = fnData;
   const schedules = await tasks
     .getSchedule(apiKey, `cl:${clickupTaskId}`)
     .then(res => res.data);
@@ -56,6 +62,42 @@ const updateDueDate = async (clickupTaskId, clickupDueDate) => {
     });
 };
 
+const createSchedule = async fnData => {
+  const { clickupTaskId, clickupUsers } = fnData;
+  const {
+    parent,
+    due_date,
+    time_estimate,
+    custom_fields,
+    url,
+    project
+  } = await clickup.tasks
+    .getTask(clickupApiKey, clickupTaskId)
+    .then(res => res.data);
+
+  const promises = clickupUsers.map(user => {
+    const d = {
+      task: `cl:${clickupTaskId}`,
+      user: convUser(user),
+      project: `cl:${project.id}`,
+      startDate: stringifyDate(due_date),
+      endDate: stringifyDate(due_date),
+      time: (time_estimate || 900000) / 1000,
+      note: url,
+      includeWeekends: true,
+      type: "task",
+      forceOverride: true
+    };
+    return tasks.createSchedule(apiKey, d);
+  });
+
+  return Promise.all(promises)
+    .then(() => `Created schedules for ${clickupTaskId}`)
+    .catch(err => {
+      throw err;
+    });
+};
+
 const fnMap = key => {
   switch (key) {
     case "DELETE":
@@ -64,6 +106,8 @@ const fnMap = key => {
       return updateEstimate;
     case "DUEDATE":
       return updateDueDate;
+    case "CREATE":
+      return createSchedule;
     default:
       console.log("Invalid Key");
   }
