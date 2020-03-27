@@ -1,4 +1,5 @@
 const { tasks } = require("everhour-core");
+const { stringifyDate } = require("../../utils/index");
 
 const apiKey = process.env.EVERHOUR_API_KEY;
 
@@ -36,12 +37,33 @@ const updateEstimate = async (clickupTaskId, clickupEstimate) => {
     });
 };
 
+const updateDueDate = async (clickupTaskId, clickupDueDate) => {
+  const schedules = await tasks
+    .getSchedule(apiKey, `cl:${clickupTaskId}`)
+    .then(res => res.data);
+
+  const promises = schedules.map(schedule => {
+    tasks.updateSchedule(apiKey, schedule.id, {
+      startDate: stringifyDate(clickupDueDate),
+      endDate: stringifyDate(clickupDueDate)
+    });
+  });
+
+  return Promise.all(promises)
+    .then(() => `Updated due dates for ${clickupTaskId}`)
+    .catch(() => {
+      throw `Due dates update error --- ${clickupTaskId}`;
+    });
+};
+
 const fnMap = key => {
   switch (key) {
     case "DELETE":
       return deleteTask;
     case "ESTIMATE":
       return updateEstimate;
+    case "DUEDATE":
+      return updateDueDate;
     default:
       console.log("Invalid Key");
   }

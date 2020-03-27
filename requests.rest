@@ -7,7 +7,7 @@ POST http://localhost:8000/webhooks/deleteTask
 Content-Type: application/json
 
 {
-  "task_id": "58aw1h"
+  "task_id": "5ecjat"
 }
 
 ### POST /webhooks/updateEstimate
@@ -18,5 +18,16 @@ Content-Type: application/json
   "task_id": "5ecjat",
   "history_items": [
     {"after": 21600000}
+  ]
+}
+
+### POST /webhooks/updateDueDate
+POST http://localhost:8000/webhooks/updateDueDate
+Content-Type: application/json
+
+{
+  "task_id": "5ecjat",
+  "history_items": [
+    {"after": 1584442800000}
   ]
 }
