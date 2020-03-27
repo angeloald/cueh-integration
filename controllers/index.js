@@ -1,3 +1,4 @@
 module.exports = {
-  getHome: require("./getHome")
+  getHome: require("./getHome"),
+  deleteTask: require("./deleteTask")
 };

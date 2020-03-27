@@ -1,2 +1,11 @@
-### GET /
-GET http://localhost:8000
+### GET /webhooks
+GET http://localhost:8000/webhooks
+
+
+### POST /webhooks/deleteTask
+POST http://localhost:8000/webhooks/deleteTask
+Content-Type: application/json
+
+{
+  "task_id": "58aw1h"
+}
