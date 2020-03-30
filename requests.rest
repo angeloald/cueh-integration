@@ -7,69 +7,27 @@ POST http://localhost:8000/webhooks/deleteTask
 Content-Type: application/json
 
 {
-  "task_id": "5mfu1k"
+  "task_id": "5ecjat"
 }
 
-### POST /webhooks/updateEstimate ORIGINAL
+### POST /webhooks/updateEstimate
 POST http://localhost:8000/webhooks/updateEstimate
 Content-Type: application/json
 
 {
-  "task_id": "5mfu1k",
+  "task_id": "5ecjat",
   "history_items": [
     {"after": 21600000}
   ]
 }
 
-### POST /webhooks/updateEstimate DIFFERENT
-POST http://localhost:8000/webhooks/updateEstimate
-Content-Type: application/json
-
-{
-  "task_id": "5mfu1k",
-  "history_items": [
-    {"after": 3600000}
-  ]
-}
-
-### POST /webhooks/updateDueDate ORIGINAL
+### POST /webhooks/updateDueDate
 POST http://localhost:8000/webhooks/updateDueDate
 Content-Type: application/json
 
 {
-  "task_id": "5mfu1k",
+  "task_id": "5ecjat",
   "history_items": [
-    {"after": 1584788400000}
+    {"after": 1584442800000}
   ]
-}
-
-### POST /webhooks/updateDueDate DIFFERENT
-POST http://localhost:8000/webhooks/updateDueDate
-Content-Type: application/json
-
-{
-  "task_id": "5mfu1k",
-  "history_items": [
-    {"after": 1584529200000}
-  ]
-}
-
-### POST /webhooks/updateAssignees
-POST http://localhost:8000/webhooks/updateAssignees
-Content-Type: application/json
-
-{
-  "task_id": "5mfu1k",
-  "history_items": [
-    {"after": {"id": 4373882}}, 
-    {"after": {"id": 1387949}}
-  ]
-}
-
-### POST /webhooks/createTask
-POST http://localhost:8000/webhooks/createTask
-Content-Type: application/json
-
-{
-  "task_id": "5mfu1k"
 }
