@@ -3,5 +3,6 @@ module.exports = {
   deleteTask: require("./deleteTask"),
   updateEstimate: require("./updateEstimate"),
   updateDueDate: require("./updateDueDate"),
-  updateAssignees: require("./updateAssignees")
+  updateAssignees: require("./updateAssignees"),
+  createTask: require("./createTask")
 };

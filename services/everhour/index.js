@@ -1,5 +1,5 @@
 const { tasks } = require("everhour-core");
-const { stringifyDate, convUser } = require("../../utils/index");
+const { stringifyDate, convUser, poll } = require("../../utils/index");
 
 const clickup = require("clickup-core");
 
@@ -98,6 +98,19 @@ const createSchedule = async fnData => {
     });
 };
 
+const lockPollSentinelHead = async fnData => {
+  return Promise.resolve(`Unlocking ${fnData.clickupTaskId}`);
+};
+
+const pollTaskSync = async fnData => {
+  const { clickupTaskId } = fnData;
+  console.log(`Polling for ${clickupTaskId}`);
+  return poll(
+    () => tasks.getTask(apiKey, `cl:${clickupTaskId}`),
+    clickupTaskId
+  );
+};
+
 const fnMap = key => {
   switch (key) {
     case "DELETE":
@@ -108,8 +121,10 @@ const fnMap = key => {
       return updateDueDate;
     case "CREATE":
       return createSchedule;
+    case "LOCKPOLL":
+      return lockPollSentinelHead;
     default:
       console.log("Invalid Key");
   }
 };
-module.exports = fnMap;
+module.exports = { fnMap, pollTaskSync };

@@ -1,4 +1,4 @@
-const fnMap = require("../everhour");
+const { fnMap } = require("../everhour");
 const Redis = require("ioredis");
 const redis = new Redis();
 
@@ -14,12 +14,18 @@ const enqueue = (clickupTaskId, fnName, fnData) => {
 };
 
 const dequeueExecute = async clickupTaskId => {
-  const dataStr = await redis.rpop(clickupTaskId);
-  if (dataStr) {
-    const data = JSON.parse(dataStr);
-    return fnMap[data.fnName](data.fnData);
+  try {
+    const dataStr = await redis.rpop(clickupTaskId);
+    if (dataStr) {
+      const { fnName, fnData } = JSON.parse(dataStr);
+      const fnRes = await fnMap(fnName)(fnData);
+      console.log(fnRes);
+    }
+    return dataStr;
+  } catch (err) {
+    if (err.response) console.log(err.response.data);
+    else console.log(err);
   }
-  return dataStr;
 };
 
 module.exports = { exists, enqueue, dequeueExecute };
