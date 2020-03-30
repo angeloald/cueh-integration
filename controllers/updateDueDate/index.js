@@ -1,4 +1,4 @@
-const fnMap = require("../../services/everhour");
+const { fnMap } = require("../../services/everhour");
 const { exists, enqueue } = require("../../services/syncQueue");
 
 module.exports = async (req, res) => {
