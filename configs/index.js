@@ -1,3 +1,4 @@
+const { constructUserDictArray, createUserDatabase } = require("./userdb");
 const {
   getWebhooksIds,
   deleteWebhooks,
@@ -6,6 +7,10 @@ const {
 
 (async () => {
   try {
+    const userData = await constructUserDictArray();
+    const userDataDbMsg = await createUserDatabase(userData);
+    console.log(userDataDbMsg);
+
     const webhookIds = await getWebhooksIds();
     const deletedMsg = await deleteWebhooks(webhookIds);
     console.log(deletedMsg);
@@ -39,13 +44,3 @@ const {
     else console.log(err);
   }
 })();
-
-// getWebhooksIds()
-//   .then(res => res.data.webhooks)
-//   .then(webhooks => webhooks.map(webhook => webhook.id))
-//   .then(webhookIds => deleteWebhooks(webhookIds))
-//   .then(() => console.log("Deleted all webhooks"))
-//   .catch(err => {
-//     if (err.response) console.log(err.response.data);
-//     else console.log(err);
-//   });
