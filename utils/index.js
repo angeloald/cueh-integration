@@ -20,6 +20,33 @@ const convUser = clickupUser => {
   );
 };
 
+const convId = clickupId => {
+  return `cl:${clickupId}`;
+};
+
+const convEstimate = clickupEstimate => {
+  return clickupEstimate ? clickupEstimate / 1000 : this.defaultEstimate;
+};
+
+const convDate = clickupDate => {
+  if (clickupDate) {
+    const dateObj = new Date(parseInt(clickupDate));
+    const year = dateObj.getUTCFullYear();
+    const month = dateObj.getUTCMonth() + 1;
+    const day = dateObj.getUTCDate();
+    return `${year}-${month}-${day}`;
+  }
+  return null;
+};
+
+function getPropSafe(fn, defaultVal = 0) {
+  try {
+    return fn();
+  } catch (e) {
+    return defaultVal;
+  }
+}
+
 function delay(seconds = process.env.STANDARD_DELAY || 3) {
   return new Promise(resolve => setTimeout(resolve, seconds * 1000));
 }
@@ -48,6 +75,10 @@ function poll(
 module.exports = {
   stringifyDate,
   convUser,
+  convId,
+  convDate,
+  convEstimate,
+  getPropSafe,
   delay,
   poll
 };

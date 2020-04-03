@@ -1,5 +1,5 @@
 const { tasks } = require("everhour-core");
-const { stringifyDate, convUser, poll } = require("../../utils/index");
+const utils = require("../../utils");
 
 const clickup = require("clickup-core");
 
@@ -50,8 +50,8 @@ const updateDueDate = async fnData => {
 
   const promises = schedules.map(schedule => {
     tasks.updateSchedule(apiKey, schedule.id, {
-      startDate: stringifyDate(clickupDueDate),
-      endDate: stringifyDate(clickupDueDate)
+      startDate: utils.stringifyDate(clickupDueDate),
+      endDate: utils.stringifyDate(clickupDueDate)
     });
   });
 
@@ -78,10 +78,10 @@ const createSchedule = async fnData => {
   const promises = clickupUsers.map(user => {
     const d = {
       task: `cl:${clickupTaskId}`,
-      user: convUser(user),
+      user: utils.convUser(user),
       project: `cl:${project.id}`,
-      startDate: stringifyDate(due_date),
-      endDate: stringifyDate(due_date),
+      startDate: utils.stringifyDate(due_date),
+      endDate: utils.stringifyDate(due_date),
       time: (time_estimate || 900000) / 1000,
       note: url,
       includeWeekends: true,
@@ -98,6 +98,49 @@ const createSchedule = async fnData => {
     });
 };
 
+const updateClickupChildTask = async clickupTaskId => {
+  await utils.delay();
+  const cuRes = await clickup.tasks.getTask(clickupApiKey, clickupTaskId);
+  const cuData = cuRes.data;
+  const data = {
+    url: cuData.url,
+    assignees: cuData.assignees.map(assignee => utils.convUser(assignee.id)),
+    project: utils.convId(cuData.project.id),
+    parent: cuData.parent,
+    estimate: utils.convEstimate(cuData.time_estimate),
+    dueDate: cuData.due_date || cuData.date_created,
+    hasNoRealDueDate: cuData.dueDate ? false : true,
+    relativeTime: parseInt(
+      utils.getPropSafe(
+        () =>
+          cuData.custom_fields.find(
+            field => "Relative Task Date" === field.name
+          ).value
+      ) || 0
+    )
+  };
+
+  // if a subtask without a due date, then...
+  if (data.parent && data.hasNoRealDueDate) {
+    const parentData = await clickup.tasks
+      .getTask(clickupApiKey, data.parent)
+      .then(res => res.data);
+    if (data.relativeTime) {
+      // case 1: subtask has relative due date
+      data.dueDate =
+        parentData.due_date - data.relativeTime * 1000 * 60 * 60 * 24;
+    } else {
+      // case 2: subtask has no relative due date
+      data.dueDate = parentData.due_date;
+    }
+    await clickup.tasks.updateTask(clickupApiKey, clickupTaskId, {
+      due_date: data.dueDate
+    });
+    console.log(`Updated ClickUp due data of child task ${clickupTaskId}`);
+  }
+  return;
+};
+
 const lockPollSentinelHead = async fnData => {
   return Promise.resolve(`Unlocking ${fnData.clickupTaskId}`);
 };
@@ -105,7 +148,7 @@ const lockPollSentinelHead = async fnData => {
 const pollTaskSync = async fnData => {
   const { clickupTaskId } = fnData;
   console.log(`Polling for ${clickupTaskId}`);
-  return poll(
+  return utils.poll(
     () => tasks.getTask(apiKey, `cl:${clickupTaskId}`),
     clickupTaskId
   );
@@ -128,4 +171,4 @@ const fnMap = key => {
   }
 };
 
-module.exports = { fnMap, pollTaskSync };
+module.exports = { fnMap, pollTaskSync, updateClickupChildTask };
