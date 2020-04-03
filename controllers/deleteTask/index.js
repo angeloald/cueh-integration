@@ -5,7 +5,7 @@ const { delay } = require("../../utils");
 module.exports = async (req, res) => {
   res.sendStatus(200);
 
-  await delay(process.env.STANDARD_DELAY || 0);
+  await delay(process.env.STANDARD_DELAY || 2);
 
   const fnData = { clickupTaskId: req.body.task_id };
 
