@@ -7,37 +7,27 @@ const {
 
 (async () => {
   try {
-    const userData = await constructUserDictArray();
-    const userDataDbMsg = await createUserDatabase(userData);
-    console.log(userDataDbMsg);
+    if ("development" !== process.env.NODE_ENV) {
+      const userData = await constructUserDictArray();
+      const userDataDbMsg = await createUserDatabase(userData);
+      console.log(userDataDbMsg);
+    }
 
     const webhookIds = await getWebhooksIds();
     const deletedMsg = await deleteWebhooks(webhookIds);
     console.log(deletedMsg);
 
-    const webhookConfigs = [
-      {
-        endpoint: "https://clickup-everhour.ngrok.io/webhooks/updateEstimate/",
-        event: "taskTimeEstimateUpdated"
-      },
-      {
-        endpoint: "https://clickup-everhour.ngrok.io/webhooks/deleteTask",
-        event: "taskDeleted"
-      },
-      {
-        endpoint: "https://clickup-everhour.ngrok.io/webhooks/updateDueDate",
-        event: "taskDueDateUpdated"
-      },
-      {
-        endpoint: "https://clickup-everhour.ngrok.io/webhooks/updateAssignees",
-        event: "taskAssigneeUpdated"
-      },
-      {
-        endpoint: "https://clickup-everhour.ngrok.io/webhooks/createTask",
-        event: "taskCreated"
-      }
-    ];
-    const registerMsg = await registerWebhooks(webhookConfigs);
+    const webhooksConfig = {
+      endpoint: "https://clickup-everhour.ngrok.io/webhooks/",
+      events: [
+        "taskTimeEstimateUpdated",
+        "taskDeleted",
+        "taskDueDateUpdated",
+        "taskAssigneeUpdated",
+        "taskCreated"
+      ]
+    };
+    const registerMsg = await registerWebhooks(webhooksConfig);
     console.log(registerMsg);
   } catch (err) {
     if (err.response) console.log(err.response.data);

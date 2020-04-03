@@ -38,7 +38,7 @@ const deleteWebhooks = async (
 };
 
 const registerWebhooks = async (
-  webhookConfigs = {},
+  webhooksConfig = {},
   teamId = process.env.CLICKUP_TEAM_ID,
   apiKey = process.env.CLICKUP_API_KEY
 ) => {
@@ -48,21 +48,17 @@ const registerWebhooks = async (
     headers: {
       authorization: apiKey
     },
-    data: {}
+    data: webhooksConfig
   };
 
   const webhookAuth = {};
-  for (const webhookConfig of webhookConfigs) {
-    const { endpoint, event } = webhookConfig;
-    config.data.endpoint = endpoint;
-    config.data.events = [event];
-    const webhookRes = await axios(config);
-    const webhookData = webhookRes.data;
-    const webhookId = webhookData.id;
-    const webhookSecret = webhookData.webhook.secret;
-    webhookAuth[webhookId] = webhookSecret;
-    await new Promise(r => setTimeout(r, 500));
-  }
+
+  const webhookRes = await axios(config);
+  const webhookData = webhookRes.data;
+  const webhookId = webhookData.id;
+  const webhookSecret = webhookData.webhook.secret;
+  webhookAuth[webhookId] = webhookSecret;
+  await new Promise(r => setTimeout(r, 500));
 
   return webhookAuth;
 };
