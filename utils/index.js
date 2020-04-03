@@ -37,7 +37,7 @@ function poll(
         console.log(`Retries: ${retries}, gap is ${pollGap}: ${clickupTaskId}`);
       }
       if (retries-- > 0) {
-        return delay()
+        return delay(pollGap)
           .then(fn)
           .catch(retry);
       }
