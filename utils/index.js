@@ -27,7 +27,7 @@ function delay(seconds = process.env.STANDARD_DELAY || 3) {
 function poll(
   fn,
   clickupTaskId,
-  retries = process.env.RETRIES || 10,
+  retries = process.env.RETRIES || 5,
   pollGap = process.env.POLL_GAP || 3
 ) {
   return Promise.resolve()
@@ -41,10 +41,6 @@ function poll(
           .then(fn)
           .catch(retry);
       }
-      if (retries < 0) {
-        throw `Polling failed ${clickupTaskId}`;
-      }
-
       throw err;
     });
 }

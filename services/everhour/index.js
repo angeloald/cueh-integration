@@ -127,4 +127,5 @@ const fnMap = key => {
       console.log("Invalid Key");
   }
 };
+
 module.exports = { fnMap, pollTaskSync };

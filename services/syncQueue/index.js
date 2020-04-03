@@ -28,4 +28,8 @@ const dequeueExecute = async clickupTaskId => {
   }
 };
 
-module.exports = { exists, enqueue, dequeueExecute };
+const deleteQueue = clickupTaskId => {
+  return redis.del(clickupTaskId);
+};
+
+module.exports = { exists, enqueue, dequeueExecute, deleteQueue };
