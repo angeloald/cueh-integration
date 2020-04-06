@@ -18,7 +18,8 @@ const {
     console.log(deletedMsg);
 
     const webhooksConfig = {
-      endpoint: "https://clickup-everhour.ngrok.io/webhooks/",
+      endpoint:
+        process.env.ENDPOINT || "https://clickup-everhour.ngrok.io/webhooks/",
       events: [
         "taskTimeEstimateUpdated",
         "taskDeleted",
