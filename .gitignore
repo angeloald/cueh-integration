@@ -114,7 +114,6 @@ db.json
 
 # env or ecosystem.config.js 
 .env
-ecosystem.config.js
 
 # mac
 .DS_Store
