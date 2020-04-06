@@ -1,30 +1,33 @@
 const {
   enqueue,
   dequeueExecute,
-  deleteQueue
+  deleteQueue,
 } = require("../../services/syncQueue");
 const {
   pollTaskSync,
-  updateClickupChildTask
+  updateClickupChildTask,
+  updateEverhourBillable,
 } = require("../../services/everhour");
 
 module.exports = async (req, res) => {
   res.sendStatus(200);
   const fnData = {
-    clickupTaskId: req.body.task_id
+    clickupTaskId: req.body.task_id,
   };
 
   try {
     console.log(`Locking ${fnData.clickupTaskId}`);
-    await new Promise(r => setTimeout(r, 3000));
     await enqueue(fnData.clickupTaskId, "LOCKPOLL", fnData);
-    await updateClickupChildTask(fnData.clickupTaskId);
-    const pollStatus = await pollTaskSync(fnData).then(res => res.status);
+    const {
+      list: { name: clickupTaskListName },
+    } = await updateClickupChildTask(fnData.clickupTaskId);
+    const pollStatus = await pollTaskSync(fnData).then((res) => res.status);
+    await updateEverhourBillable(fnData.clickupTaskId, clickupTaskListName);
 
     if (pollStatus < 300) {
       let config = true;
       while (config) {
-        await new Promise(r => setTimeout(r, 2000));
+        await new Promise((r) => setTimeout(r, 2000));
         config = await dequeueExecute(fnData.clickupTaskId);
         if (config === null) break;
       }

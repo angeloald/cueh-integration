@@ -1,18 +1,19 @@
 const { tasks } = require("everhour-core");
 const utils = require("../../utils");
+const axios = require("axios");
 
 const clickup = require("clickup-core");
 
 const apiKey = process.env.EVERHOUR_API_KEY;
 const clickupApiKey = process.env.CLICKUP_API_KEY;
 
-const deleteTask = async fnData => {
+const deleteTask = async (fnData) => {
   const { clickupTaskId } = fnData;
   const schedules = await tasks
     .getSchedule(apiKey, `cl:${clickupTaskId}`)
-    .then(res => res.data);
+    .then((res) => res.data);
 
-  const promises = schedules.map(schedule =>
+  const promises = schedules.map((schedule) =>
     tasks.deleteSchedule(apiKey, schedule.id)
   );
 
@@ -23,15 +24,15 @@ const deleteTask = async fnData => {
     });
 };
 
-const updateEstimate = async fnData => {
+const updateEstimate = async (fnData) => {
   const { clickupTaskId, clickupEstimate } = fnData;
   const schedules = await tasks
     .getSchedule(apiKey, `cl:${clickupTaskId}`)
-    .then(res => res.data);
+    .then((res) => res.data);
 
-  const promises = schedules.map(schedule =>
+  const promises = schedules.map((schedule) =>
     tasks.updateSchedule(apiKey, schedule.id, {
-      time: (clickupEstimate || 900000) / 1000
+      time: (clickupEstimate || 900000) / 1000,
     })
   );
 
@@ -42,16 +43,16 @@ const updateEstimate = async fnData => {
     });
 };
 
-const updateDueDate = async fnData => {
+const updateDueDate = async (fnData) => {
   const { clickupTaskId, clickupDueDate } = fnData;
   const schedules = await tasks
     .getSchedule(apiKey, `cl:${clickupTaskId}`)
-    .then(res => res.data);
+    .then((res) => res.data);
 
-  const promises = schedules.map(schedule => {
+  const promises = schedules.map((schedule) => {
     tasks.updateSchedule(apiKey, schedule.id, {
       startDate: utils.stringifyDate(clickupDueDate),
-      endDate: utils.stringifyDate(clickupDueDate)
+      endDate: utils.stringifyDate(clickupDueDate),
     });
   });
 
@@ -62,7 +63,7 @@ const updateDueDate = async fnData => {
     });
 };
 
-const createSchedule = async fnData => {
+const createSchedule = async (fnData) => {
   const { clickupTaskId, clickupUsers } = fnData;
   const {
     parent,
@@ -70,12 +71,12 @@ const createSchedule = async fnData => {
     time_estimate,
     custom_fields,
     url,
-    project
+    project,
   } = await clickup.tasks
     .getTask(clickupApiKey, clickupTaskId)
-    .then(res => res.data);
+    .then((res) => res.data);
 
-  const promises = clickupUsers.map(user => {
+  const promises = clickupUsers.map((user) => {
     const d = {
       task: `cl:${clickupTaskId}`,
       user: utils.convUser(user),
@@ -86,25 +87,25 @@ const createSchedule = async fnData => {
       note: url,
       includeWeekends: true,
       type: "task",
-      forceOverride: true
+      forceOverride: true,
     };
     return tasks.createSchedule(apiKey, d);
   });
 
   return Promise.all(promises)
     .then(() => `Created schedules for ${clickupTaskId}`)
-    .catch(err => {
+    .catch((err) => {
       throw err;
     });
 };
 
-const updateClickupChildTask = async clickupTaskId => {
+const updateClickupChildTask = async (clickupTaskId) => {
   await utils.delay();
   const cuRes = await clickup.tasks.getTask(clickupApiKey, clickupTaskId);
   const cuData = cuRes.data;
   const data = {
     url: cuData.url,
-    assignees: cuData.assignees.map(assignee => utils.convUser(assignee.id)),
+    assignees: cuData.assignees.map((assignee) => utils.convUser(assignee.id)),
     project: utils.convId(cuData.project.id),
     parent: cuData.parent,
     estimate: utils.convEstimate(cuData.time_estimate),
@@ -114,17 +115,17 @@ const updateClickupChildTask = async clickupTaskId => {
       utils.getPropSafe(
         () =>
           cuData.custom_fields.find(
-            field => "Relative Task Date" === field.name
+            (field) => "Relative Task Date" === field.name
           ).value
       ) || 0
-    )
+    ),
   };
 
   // if a subtask without a due date, then...
   if (data.parent && data.hasNoRealDueDate) {
     const parentData = await clickup.tasks
       .getTask(clickupApiKey, data.parent)
-      .then(res => res.data);
+      .then((res) => res.data);
     if (data.relativeTime) {
       // case 1: subtask has relative due date
       data.dueDate =
@@ -134,18 +135,39 @@ const updateClickupChildTask = async clickupTaskId => {
       data.dueDate = parentData.due_date;
     }
     await clickup.tasks.updateTask(clickupApiKey, clickupTaskId, {
-      due_date: data.dueDate
+      due_date: data.dueDate,
     });
     console.log(`Updated ClickUp due data of child task ${clickupTaskId}`);
   }
-  return;
+  return cuData;
 };
 
-const lockPollSentinelHead = async fnData => {
+const updateEverhourBillable = (clickupTaskId, clickupTaskListName) => {
+  if (clickupTaskListName === "Non-Billable Client") {
+    const config = {
+      method: "PUT",
+      url: `https://api.everhour.com/tasks/cl:${clickupTaskId}/billing`,
+      headers: {
+        "content-type": "application/json",
+        "x-api-key": apiKey,
+      },
+      data: {
+        unbillable: true,
+      },
+    };
+    return axios(config)
+      .then(() => console.log(`Set unbillable to true for ${clickupTaskId}`))
+      .catch((err) => {
+        throw err;
+      });
+  }
+};
+
+const lockPollSentinelHead = async (fnData) => {
   return Promise.resolve(`Unlocking ${fnData.clickupTaskId}`);
 };
 
-const pollTaskSync = async fnData => {
+const pollTaskSync = async (fnData) => {
   const { clickupTaskId } = fnData;
   console.log(`Polling for ${clickupTaskId}`);
   return utils.poll(
@@ -154,7 +176,7 @@ const pollTaskSync = async fnData => {
   );
 };
 
-const fnMap = key => {
+const fnMap = (key) => {
   switch (key) {
     case "DELETE":
       return deleteTask;
@@ -171,4 +193,9 @@ const fnMap = key => {
   }
 };
 
-module.exports = { fnMap, pollTaskSync, updateClickupChildTask };
+module.exports = {
+  fnMap,
+  pollTaskSync,
+  updateClickupChildTask,
+  updateEverhourBillable,
+};
