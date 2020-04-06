@@ -2,14 +2,14 @@ const { constructUserDictArray, createUserDatabase } = require("./userdb");
 const {
   getWebhooksIds,
   deleteWebhooks,
-  registerWebhooks
+  registerWebhooks,
 } = require("./webhooks");
 
 (async () => {
   try {
     if ("development" !== process.env.NODE_ENV) {
       const userData = await constructUserDictArray();
-      const userDataDbMsg = await createUserDatabase(userData);
+      const userDataDbMsg = createUserDatabase(userData);
       console.log(userDataDbMsg);
     }
 
@@ -24,8 +24,8 @@ const {
         "taskDeleted",
         "taskDueDateUpdated",
         "taskAssigneeUpdated",
-        "taskCreated"
-      ]
+        "taskCreated",
+      ],
     };
     const registerMsg = await registerWebhooks(webhooksConfig);
     console.log(registerMsg);

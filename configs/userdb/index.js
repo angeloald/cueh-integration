@@ -11,14 +11,14 @@ const constructUserDictArray = async (
 ) => {
   const cuUsers = await clickup.teams
     .getTeam(clickupApiKey)
-    .then(res => {
-      const team = res.data.teams.find(team => clickupTeamId === team.id);
-      return team.members.map(u => ({
+    .then((res) => {
+      const team = res.data.teams.find((team) => clickupTeamId === team.id);
+      return team.members.map((u) => ({
         id: u.user.id,
-        email: u.user.email
+        email: u.user.email,
       }));
     })
-    .catch(err => {
+    .catch((err) => {
       if (err.response) {
         err.response.data["source"] = "clickup";
         err.response.data["status"] = err.response.status;
@@ -28,10 +28,10 @@ const constructUserDictArray = async (
 
   const ehUsers = await everhour.users
     .getUsers(everhourApiKey)
-    .then(res => {
-      return res.data.map(u => ({ id: u.id, email: u.email }));
+    .then((res) => {
+      return res.data.map((u) => ({ id: u.id, email: u.email }));
     })
-    .catch(err => {
+    .catch((err) => {
       if (err.response) {
         err.response.data["source"] = "everhour";
         err.response.data["status"] = err.response.status;
@@ -40,13 +40,13 @@ const constructUserDictArray = async (
     });
 
   return Promise.all([cuUsers, ehUsers])
-    .then(data => {
+    .then((data) => {
       const userDictArray = [];
       const cuData = data[0];
       const ehData = data[1];
 
-      cuData.forEach(user => {
-        let ehId = ehData.find(ehUser => ehUser.email === user.email);
+      cuData.forEach((user) => {
+        let ehId = ehData.find((ehUser) => ehUser.email === user.email);
         if (ehId === undefined) {
           ehId = null;
         } else {
@@ -56,39 +56,31 @@ const constructUserDictArray = async (
         userDictArray.push({
           cuId: user.id,
           email: user.email,
-          ehId: ehId
+          ehId: ehId,
         });
       });
       return userDictArray;
     })
-    .catch(err => {
+    .catch((err) => {
       throw err;
     });
 };
 
-const createUserDatabase = userData => {
-  try {
-    if (fs.existsSync("./db.json")) {
-      throw new Error(
-        "User database found. Please delete it to make a new one"
-      );
-    } else {
-      const adapter = new FileSync("db.json");
-      const db = low(adapter);
-      db.defaults({ users: [] }).write();
-      userData.forEach(user => {
-        db.get("users")
-          .push(user)
-          .write();
-      });
-      return "New user database is created";
-    }
-  } catch (err) {
-    throw err;
+const createUserDatabase = (userData) => {
+  if (fs.existsSync("./db.json")) {
+    throw new Error("User database found. Please delete it to make a new one");
+  } else {
+    const adapter = new FileSync("db.json");
+    const db = low(adapter);
+    db.defaults({ users: [] }).write();
+    userData.forEach((user) => {
+      db.get("users").push(user).write();
+    });
+    return "New user database is created";
   }
 };
 
 module.exports = {
   constructUserDictArray,
-  createUserDatabase
+  createUserDatabase,
 };

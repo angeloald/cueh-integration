@@ -65,14 +65,7 @@ const updateDueDate = async (fnData) => {
 
 const createSchedule = async (fnData) => {
   const { clickupTaskId, clickupUsers } = fnData;
-  const {
-    parent,
-    due_date,
-    time_estimate,
-    custom_fields,
-    url,
-    project,
-  } = await clickup.tasks
+  const { due_date, time_estimate, url, project } = await clickup.tasks
     .getTask(clickupApiKey, clickupTaskId)
     .then((res) => res.data);
 
