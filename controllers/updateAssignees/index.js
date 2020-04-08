@@ -9,7 +9,9 @@ module.exports = async (req, res) => {
 
   const fnData = {
     clickupTaskId: req.body.task_id,
-    clickupUsers: req.body.history_items.map(h => h.after.id)
+    clickupUsers: req.body.history_items
+      .map((h) => (h.after ? h.after.id : null))
+      .filter(Boolean), // we add a filter
   };
 
   const taskInQueue = await exists(fnData.clickupTaskId);
